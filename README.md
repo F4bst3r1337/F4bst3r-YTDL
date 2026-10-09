@@ -2,6 +2,10 @@
 
 Lokaler Video- und Audio-Downloader mit Weboberfläche, gebaut auf **yt-dlp** (der gepflegte Nachfolger von youtube-dl) und **ffmpeg**.
 
+> **Hinweis:** Dieses Projekt ist zu 100 % mit Claude (Anthropic) vibe-gecodet. Der gesamte Code wurde von der KI geschrieben und nicht manuell geprüft. Nutzung auf eigene Verantwortung.
+>
+> **Note:** This project is 100% vibe-coded with Claude (Anthropic). All code was written by the AI and has not been manually reviewed. Use at your own risk.
+
 ## Starten
 
 | System | Befehl |
