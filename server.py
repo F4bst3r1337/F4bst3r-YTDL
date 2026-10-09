@@ -50,9 +50,11 @@ class Settings:
     parallel = 2
     cookies_browser: str | None = None
     cookies_file: str | None = None
+    cookies_auto = True  # bei Anmelde-Aufforderung automatisch Browser-Cookies probieren
 
 
 CFG = Settings()
+COOKIE_BROWSERS = ("firefox", "chrome", "edge", "brave")
 
 
 # ---------------------------------------------------------------- Werkzeuge
@@ -79,6 +81,7 @@ def tools_status() -> dict:
         "ffmpeg": bool(shutil.which("ffmpeg")),
         "ffprobe": bool(shutil.which("ffprobe")),
         "jsRuntime": js_runtime(),
+        "cookies": CFG.cookies_browser or ("Datei" if CFG.cookies_file else None),
         "dir": str(CFG.out_dir),
         "parallel": CFG.parallel,
     }
@@ -95,7 +98,8 @@ def friendly(msg: str) -> str:
         return "Dieses Format gibt es für das Video nicht. Wähle „Max“ oder ein anderes Format."
     if "sign in to confirm" in low or "not a bot" in low:
         return ("YouTube verlangt eine Anmeldung. Starte den F4bst3r-YTDL mit "
-                "--cookies-from-browser firefox (oder chrome, edge, brave), damit yt-dlp deine Anmeldung nutzt.")
+                "--cookies-from-browser firefox (oder chrome, edge, brave), damit yt-dlp deine Anmeldung nutzt. "
+                "Melde dich dafür im Browser bei YouTube an.")
     if "confirm your age" in low or "age-restricted" in low:
         return "Das Video ist altersbeschränkt. Starte den F4bst3r-YTDL mit --cookies-from-browser firefox, um dich anzumelden."
     if "private video" in low:
@@ -123,7 +127,16 @@ def valid_url(value: object) -> bool:
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
-def base_opts() -> dict:
+def needs_login(msg: object) -> bool:
+    low = str(msg).lower()
+    return any(s in low for s in ("sign in to confirm", "not a bot", "confirm your age", "age-restricted"))
+
+
+def can_try_cookies() -> bool:
+    return CFG.cookies_auto and not CFG.cookies_browser and not CFG.cookies_file
+
+
+def base_opts(browser: str | None = None) -> dict:
     opts: dict = {
         "quiet": True,
         "no_warnings": True,
@@ -137,8 +150,9 @@ def base_opts() -> dict:
     runtime = js_runtime()
     if runtime and runtime != "deno":
         opts["js_runtimes"] = {runtime: {}}
-    if CFG.cookies_browser:
-        opts["cookiesfrombrowser"] = (CFG.cookies_browser,)
+    browser = browser or CFG.cookies_browser
+    if browser:
+        opts["cookiesfrombrowser"] = (browser,)
     if CFG.cookies_file:
         opts["cookiefile"] = CFG.cookies_file
     return opts
@@ -161,7 +175,23 @@ def resolution_of(fmt: dict) -> int | None:
 
 
 def get_info(url: str) -> dict:
-    opts = base_opts()
+    try:
+        return fetch_info(url)
+    except Exception as exc:  # noqa: BLE001
+        if not (needs_login(clean(exc)) and can_try_cookies()):
+            raise
+        for browser in COOKIE_BROWSERS:
+            try:
+                result = fetch_info(url, browser)
+            except Exception:  # noqa: BLE001
+                continue  # Browser fehlt, Cookies nicht lesbar oder nicht angemeldet
+            CFG.cookies_browser = browser
+            return result
+        raise exc
+
+
+def fetch_info(url: str, browser: str | None = None) -> dict:
+    opts = base_opts(browser)
     opts.update(skip_download=True, noplaylist=True, extract_flat="in_playlist")
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=False)
@@ -217,6 +247,7 @@ class Job:
         self.files: list[Path] = []
         self.errors: list[str] = []
         self.notes: list[str] = []
+        self.cookie_browser: str | None = None
         self.error = ""
         self.detail = ""
         self.created = time.time()
@@ -316,7 +347,7 @@ def parse_params(body: dict) -> dict:
 
 def build_ydl_opts(job: Job, light: bool) -> dict:
     p = job.params
-    o = base_opts()
+    o = base_opts(job.cookie_browser)
     o["noplaylist"] = not p["playlist"]
     o["paths"] = {"home": str(CFG.out_dir)}
     o["logger"] = JobLogger(job)
@@ -437,6 +468,8 @@ def run_job(job: Job) -> None:
         try:
             light = False
             retried_403 = False
+            cookie_queue: list[str] | None = None
+            login_error: Exception | None = None
             while True:
                 job.errors.clear()
                 job.files.clear()
@@ -457,6 +490,14 @@ def run_job(job: Job) -> None:
                         job.phase = "Neuer Versuch (403)"
                         time.sleep(2)
                         continue
+                    if cookie_queue is None and needs_login(str(exc) + " ".join(job.errors)) and can_try_cookies():
+                        login_error, cookie_queue = exc, list(COOKIE_BROWSERS)
+                    if cookie_queue:
+                        job.cookie_browser = cookie_queue.pop(0)
+                        job.phase = f"Neuer Versuch mit {job.cookie_browser}-Anmeldung"
+                        continue
+                    if login_error is not None:
+                        raise login_error  # kein Browser hat geholfen: ursprüngliche Meldung zeigen
                     wants_embed = job.params["embedMeta"] or job.params["embedThumb"]
                     if not light and wants_embed and "ostprocessing" in str(exc):
                         job.notes.append("Cover und Metadaten konnten nicht eingebettet werden. Die Datei ist ohne sie gespeichert.")
@@ -466,6 +507,9 @@ def run_job(job: Job) -> None:
                     raise
             if job.cancel.is_set():
                 raise DownloadCancelled("Abgebrochen")
+            if job.cookie_browser and job.files:
+                CFG.cookies_browser = job.cookie_browser
+                job.notes.append(f"YouTube wollte eine Anmeldung. Der Download lief mit den Cookies aus {job.cookie_browser}.")
             if not job.files:
                 raise RuntimeError(job.errors[0] if job.errors else "Es wurde keine Datei erzeugt.")
             if job.errors:
@@ -730,6 +774,8 @@ def main() -> int:
     parser.add_argument("--open", action="store_true", help="Oberfläche im Browser öffnen")
     parser.add_argument("--cookies-from-browser", metavar="BROWSER", help="z. B. firefox, chrome, edge, brave")
     parser.add_argument("--cookies", metavar="DATEI", help="cookies.txt im Netscape-Format")
+    parser.add_argument("--no-auto-cookies", action="store_true",
+                        help="Browser-Cookies nie automatisch probieren, wenn YouTube eine Anmeldung verlangt")
     args = parser.parse_args()
 
     if yt_dlp is None:
@@ -742,6 +788,7 @@ def main() -> int:
     CFG.parallel = max(1, args.parallel)
     CFG.cookies_browser = args.cookies_from_browser
     CFG.cookies_file = args.cookies
+    CFG.cookies_auto = not args.no_auto_cookies
     CFG.out_dir.mkdir(parents=True, exist_ok=True)
     SLOTS = threading.Semaphore(CFG.parallel)
     extend_path()

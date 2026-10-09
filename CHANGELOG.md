@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.3]
+
+### Hinzugefügt
+- Automatische Anmeldung: Verlangt YouTube eine Anmeldung, probiert die App die Cookies von Firefox, Chrome, Edge und Brave durch und merkt sich den Browser, der funktioniert hat. Das gilt für die Analyse und für Downloads.
+- Option `--no-auto-cookies`, um dieses Verhalten abzuschalten.
+- Im Download-Eintrag steht, wenn die Anmeldung aus einem Browser genutzt wurde.
+
 ## [0.2.1]
 
 ### Geändert

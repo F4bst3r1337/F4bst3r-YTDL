@@ -44,6 +44,11 @@ python server.py --dir D:\Videos --port 9000 --parallel 3
 python server.py --cookies-from-browser firefox     # für altersbeschränkte Videos
 ```
 
+## Anmeldung bei YouTube
+
+Verlangt YouTube eine Anmeldung („Sign in to confirm you're not a bot“ oder Altersabfrage), probiert die App automatisch die Cookies deiner Browser (Firefox, Chrome, Edge, Brave) durch. Dafür musst du in einem davon bei YouTube angemeldet sein. Der Browser, der funktioniert hat, wird bis zum Beenden der App weiterverwendet. Die Cookies werden nur lokal von yt-dlp gelesen und nirgends gespeichert oder gesendet.
+Firefox klappt am zuverlässigsten, bei Chrome, Edge und Brave blockiert Windows den Zugriff oft. Mit `--no-auto-cookies` schaltest du das Verhalten ab, mit `--cookies-from-browser firefox` legst du den Browser fest.
+
 ## Wenn es nicht mehr klappt
 
 YouTube ändert oft etwas. Dann hilft fast immer ein Update: `start.bat update` bzw. `./start.sh update`.
