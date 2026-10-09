@@ -1,0 +1,18 @@
+# Eigene Python-Umgebung und automatisch geladene Programme
+.venv/
+bin/
+
+# Enthält den geheimen Zugangs-Token, wird beim ersten Start automatisch erzeugt
+config.js
+
+# Python
+__pycache__/
+*.pyc
+
+# Heruntergeladene Dateien, falls ein Zielordner im Projekt gewählt wird
+downloads/
+F4bst3r-YTDL/
+
+# System
+.DS_Store
+Thumbs.db

@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F4bst3r-YTDL</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --ink: #14171c; --muted: #636b78; --line: #e1e4ea;
+    --accent: #e0312d; --accent-ink: #ffffff; --ok: #1a8f4c; --warn: #b7791f; --bad: #c0302b;
+    --track: #e8ebf0; --field: #ffffff; --shadow: 0 1px 2px rgba(20,23,28,.06), 0 8px 24px rgba(20,23,28,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --card: #181b21; --ink: #eceef2; --muted: #9aa3b2; --line: #2a2f38;
+      --accent: #ef4a45; --accent-ink: #ffffff; --ok: #3ccf7b; --warn: #e0a84a; --bad: #ff6b66;
+      --track: #262b34; --field: #12151a; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px 64px;
+  }
+  main { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; justify-content: space-between; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+  h1 span { color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--card); }
+  .chip.ok::before, .chip.warn::before, .chip.bad::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .chip.ok::before { background: var(--ok); } .chip.warn::before { background: var(--warn); } .chip.bad::before { background: var(--bad); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+  .row { display: flex; gap: 8px; }
+  input[type=url], select {
+    width: 100%; font: inherit; color: var(--ink); background: var(--field);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 42px;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 9px 14px; min-height: 42px; }
+  button:hover:not(:disabled) { border-color: var(--muted); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  button.small { min-height: 32px; padding: 4px 10px; font-size: 13px; }
+  .preview { display: grid; grid-template-columns: 160px 1fr; gap: 14px; align-items: start; }
+  .preview img { width: 160px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background: var(--track); }
+  .preview h2 { font-size: 16px; margin: 0 0 4px; overflow-wrap: anywhere; }
+  .meta { color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .badge { font-size: 12px; background: var(--track); border-radius: 6px; padding: 1px 7px; color: var(--ink); }
+  .tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .tabs button { border: 0; border-radius: 0; background: transparent; min-height: 38px; }
+  .tabs button[aria-selected=true] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+  label.f { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg button { flex: 1; border: 0; border-radius: 0; background: var(--field); min-height: 42px; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed=true] { background: var(--ink); color: var(--bg); font-weight: 600; }
+  .checks { display: grid; gap: 6px; margin-top: 14px; }
+  .checks label { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+  .checks small { color: var(--muted); display: block; }
+  .actions { margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .hint { color: var(--muted); font-size: 13px; }
+  .msg { padding: 10px 12px; border-radius: 10px; font-size: 14px; border: 1px solid var(--line); background: var(--card); }
+  .msg.bad { border-color: var(--bad); color: var(--bad); } .msg.warn { border-color: var(--warn); }
+  .msg a { color: inherit; }
+  .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .jobs-head h2 { font-size: 16px; margin: 0; }
+  .job { border-top: 1px solid var(--line); padding: 12px 0; display: grid; gap: 6px; }
+  .job:first-child { border-top: 0; }
+  .job .t { font-weight: 600; overflow-wrap: anywhere; }
+  .job .s { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 12px; }
+  .bar { height: 8px; background: var(--track); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .4s; }
+  .job.done .bar i { background: var(--ok); }
+  .job.error .bar i, .job.cancelled .bar i { background: var(--muted); }
+  .job .err { color: var(--bad); font-size: 14px; }
+  .job details { font-size: 12px; color: var(--muted); }
+  .job details pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 4px 0 0; }
+  .files { display: flex; flex-wrap: wrap; gap: 6px; }
+  a.btn { display: inline-flex; align-items: center; min-height: 32px; padding: 4px 10px; font-size: 13px; border-radius: 10px; border: 1px solid var(--line); color: var(--ink); text-decoration: none; background: var(--card); }
+  a.btn:hover { border-color: var(--muted); }
+  .empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+  .spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; vertical-align: -2px; animation: sp .7s linear infinite; margin-right: 6px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  [hidden] { display: none !important; }
+  @media (max-width: 560px) {
+    .preview { grid-template-columns: 1fr; } .preview img { width: 100%; }
+    .grid { grid-template-columns: 1fr; } .row { flex-direction: column; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } .spin { animation-duration: 2s; } }
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>F4bst3r-YTDL <span>▾</span></h1>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <div id="banner" hidden></div>
+
+  <section class="card" aria-label="Link">
+    <form class="row" id="urlForm">
+      <input type="url" id="url" placeholder="YouTube-Link einfügen …" autocomplete="off" spellcheck="false" aria-label="Video-Link" required>
+      <button class="primary" id="analyze" type="submit">Analysieren</button>
+    </form>
+    <div id="infoMsg" class="hint" style="margin-top:8px" hidden></div>
+  </section>
+
+  <section class="card preview" id="preview" hidden>
+    <img id="thumb" alt="" referrerpolicy="no-referrer">
+    <div>
+      <h2 id="pTitle"></h2>
+      <div class="meta" id="pMeta"></div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Einstellungen">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabVideo" aria-selected="true">Video</button>
+      <button role="tab" id="tabAudio" aria-selected="false">Nur Audio</button>
+    </div>
+
+    <div id="videoPane" class="grid">
+      <label class="f">Qualität
+        <select id="quality"></select>
+      </label>
+      <div class="f">Format
+        <div class="seg" id="container">
+          <button type="button" data-v="mp4" aria-pressed="true">MP4</button>
+          <button type="button" data-v="mkv" aria-pressed="false">MKV</button>
+          <button type="button" data-v="webm" aria-pressed="false">WebM</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="audioPane" class="grid" hidden>
+      <label class="f">Audioformat
+        <select id="aformat">
+          <option value="mp3">MP3</option>
+          <option value="m4a">M4A (AAC)</option>
+          <option value="opus">Opus</option>
+          <option value="flac">FLAC (verlustfrei)</option>
+          <option value="wav">WAV (unkomprimiert)</option>
+          <option value="best">Original (ohne Umwandlung)</option>
+        </select>
+      </label>
+      <label class="f" id="abitrateWrap">Qualität
+        <select id="abitrate">
+          <option value="best">Höchste (320 kbit/s)</option>
+          <option value="256">256 kbit/s</option>
+          <option value="192">192 kbit/s</option>
+          <option value="128">128 kbit/s</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="checks">
+      <label id="compatWrap"><input type="checkbox" id="compat"><span>Kompatibel (H.264)<small>Läuft auf jedem Gerät und Player. Bei 4K und 8K gibt es das oft nicht, dann wird die beste Alternative genommen.</small></span></label>
+      <label id="playlistWrap"><input type="checkbox" id="playlist"><span>Ganze Playlist laden<small>Ohne Haken wird nur das einzelne Video geladen.</small></span></label>
+      <label><input type="checkbox" id="embedMeta" checked><span>Titel und Künstler in die Datei schreiben</span></label>
+      <label id="thumbWrap"><input type="checkbox" id="embedThumb" checked><span>Cover einbetten</span></label>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="go" type="button">Herunterladen</button>
+      <span class="hint" id="goHint"></span>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Downloads">
+    <div class="jobs-head">
+      <h2>Downloads</h2>
+      <div style="display:flex;gap:8px">
+        <button class="small" id="openDir" type="button">Ordner öffnen</button>
+        <button class="small" id="clear" type="button">Liste leeren</button>
+      </div>
+    </div>
+    <div id="jobs"><div class="empty">Noch nichts geladen.</div></div>
+    <div class="hint" id="dirHint" style="margin-top:8px"></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+  const CFG = window.LOADER_CONFIG || {};
+  const BASE = location.protocol === "file:" ? `http://127.0.0.1:${CFG.port || 8765}` : "";
+  const $ = (id) => document.getElementById(id);
+  const STD = [4320, 2160, 1440, 1080, 720, 480, 360, 240, 144];
+
+  const state = { mode: "video", container: "mp4", info: null, jobs: [], timer: null, server: null };
+
+  // ---- Hilfsfunktionen
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+    }
+    for (const kid of kids) if (kid != null) n.append(kid);
+    return n;
+  }
+  const fmtTime = (s) => {
+    if (!s) return "";
+    s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+    return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(x).padStart(2, "0");
+  };
+  const fmtSize = (b) => b == null ? "" : b > 1e9 ? (b / 1e9).toFixed(2) + " GB" : (b / 1e6).toFixed(1) + " MB";
+  const fmtSpeed = (b) => b ? (b / 1e6).toFixed(1) + " MB/s" : "";
+  const fmtEta = (s) => s == null ? "" : "noch " + fmtTime(s);
+
+  async function api(path, body) {
+    const opts = { headers: { "X-Loader-Token": CFG.token || "" } };
+    if (body !== undefined) { opts.method = "POST"; opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+    const res = await fetch(BASE + path, opts);
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok) { const e = new Error(data.error || "Fehler " + res.status); e.detail = data.detail; e.status = res.status; throw e; }
+    return data;
+  }
+
+  function banner(kind, text, retry) {
+    const b = $("banner");
+    b.className = "msg " + kind;
+    b.replaceChildren(document.createTextNode(text));
+    if (retry) { b.append(" "); const btn = el("button", { class: "small", type: "button", text: "Erneut prüfen" }); btn.onclick = boot; b.append(btn); }
+    b.hidden = false;
+  }
+
+  // ---- Status
+  function renderChips(s) {
+    const c = $("chips"); c.replaceChildren();
+    const add = (cls, t) => c.append(el("span", { class: "chip " + cls, text: t }));
+    add(s.ytdlp ? "ok" : "bad", s.ytdlp ? "yt-dlp " + s.ytdlp : "yt-dlp fehlt");
+    add(s.ffmpeg ? "ok" : "bad", s.ffmpeg ? "ffmpeg" : "ffmpeg fehlt");
+    if (!s.jsRuntime) add("warn", "Deno/Node fehlt");
+    $("dirHint").textContent = "Speicherort: " + s.dir;
+    const problems = [];
+    if (!s.ffmpeg) problems.push("ffmpeg wurde nicht gefunden. Ohne ffmpeg gehen weder Video+Ton in hoher Qualität noch Audio-Umwandlung.");
+    if (!s.jsRuntime) problems.push("Für YouTube braucht yt-dlp eine JavaScript-Laufzeit (Deno oder Node.js). Ohne sie fehlen oft die höheren Qualitäten.");
+    if (problems.length) banner("warn", problems.join(" ")); else $("banner").hidden = true;
+  }
+
+  async function boot() {
+    try {
+      const s = await api("/api/status");
+      state.server = s;
+      renderChips(s);
+      refreshJobs();
+    } catch (e) {
+      if (e.status === 403) banner("bad", "Der Zugangsschlüssel passt nicht. Starte den F4bst3r-YTDL neu (start.bat bzw. start.sh) und lade diese Seite neu.", true);
+      else banner("bad", "Der F4bst3r-YTDL-Server läuft nicht. Starte start.bat (Windows) bzw. start.sh (Mac/Linux) und klicke dann auf „Erneut prüfen“.", true);
+    }
+  }
+
+  // ---- Einstellungen
+  function fillQuality() {
+    const sel = $("quality"); const keep = sel.value;
+    const info = state.info && state.info.kind === "video" ? state.info : null;
+    const max = info && info.maxRes;
+    sel.replaceChildren();
+    const autoLabel = max ? `Automatisch – höchste (${max}p${info.maxFps && info.maxFps > 30 ? info.maxFps : ""})` : "Automatisch – höchste";
+    sel.append(new Option(autoLabel, "best"));
+    for (const h of STD) if (!max || h <= max) sel.append(new Option(h + "p" + (h >= 2160 ? (h === 2160 ? " (4K)" : " (8K)") : h === 1440 ? " (2K)" : ""), String(h)));
+    sel.value = [...sel.options].some((o) => o.value === keep) ? keep : "best";
+  }
+
+  function syncUI() {
+    const video = state.mode === "video";
+    $("tabVideo").setAttribute("aria-selected", video);
+    $("tabAudio").setAttribute("aria-selected", !video);
+    $("videoPane").hidden = !video; $("audioPane").hidden = video;
+    $("compatWrap").hidden = !(video && state.container === "mp4");
+    const af = $("aformat").value;
+    $("abitrateWrap").hidden = !["mp3", "m4a", "opus"].includes(af);
+    const thumbOk = video ? state.container !== "webm" : af !== "wav";
+    $("thumbWrap").hidden = !thumbOk;
+    const pl = state.info && state.info.kind === "playlist";
+    $("playlistWrap").hidden = false;
+    if (pl) $("playlist").checked = true;
+    document.querySelectorAll("#container button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === state.container));
+    $("goHint").textContent = video && $("quality").value === "best" && state.info && state.info.maxRes
+      ? `Lädt in ${state.info.maxRes}p, der höchsten verfügbaren Auflösung.` : "";
+  }
+
+  // ---- Analyse
+  async function analyze() {
+    const url = $("url").value.trim();
+    if (!url) return;
+    const msg = $("infoMsg");
+    $("analyze").disabled = true;
+    msg.hidden = false; msg.replaceChildren(el("span", { class: "spin" }), "Video wird analysiert …");
+    $("preview").hidden = true; state.info = null;
+    try {
+      const info = await api("/api/info", { url });
+      state.info = info;
+      msg.hidden = true;
+      $("pTitle").textContent = info.title;
+      const meta = $("pMeta"); meta.replaceChildren();
+      if (info.uploader) meta.append(el("span", { text: info.uploader }));
+      if (info.kind === "playlist") meta.append(el("span", { class: "badge", text: `Playlist · ${info.count} Videos` }));
+      else {
+        if (info.duration) meta.append(el("span", { text: fmtTime(info.duration) }));
+        if (info.maxRes) meta.append(el("span", { class: "badge", text: `bis ${info.maxRes}p${info.maxFps && info.maxFps > 30 ? info.maxFps : ""}` }));
+        if (info.isLive) meta.append(el("span", { class: "badge", text: "Livestream" }));
+        if (info.playlistHint) meta.append(el("span", { class: "hint", text: "Der Link gehört zu einer Playlist. Haken unten setzen, um alles zu laden." }));
+      }
+      const img = $("thumb"); if (info.thumbnail) { img.src = info.thumbnail; img.hidden = false; } else img.hidden = true;
+      $("preview").hidden = false;
+      if (info.kind === "playlist") $("playlist").checked = true;
+    } catch (e) {
+      msg.replaceChildren(el("span", { class: "err", style: "color:var(--bad)", text: e.message }));
+    } finally {
+      $("analyze").disabled = false;
+      fillQuality(); syncUI();
+    }
+  }
+
+  // ---- Download starten
+  async function start() {
+    const url = $("url").value.trim();
+    if (!url) { $("url").focus(); return; }
+    $("go").disabled = true;
+    const video = state.mode === "video";
+    const body = {
+      url, title: state.info ? state.info.title : "",
+      mode: state.mode,
+      quality: $("quality").value,
+      container: state.container,
+      compat: $("compat").checked && !$("compatWrap").hidden,
+      aformat: $("aformat").value,
+      abitrate: $("abitrate").value,
+      playlist: $("playlist").checked,
+      embedMeta: $("embedMeta").checked,
+      embedThumb: $("embedThumb").checked,
+    };
+    try { await api("/api/download", body); await refreshJobs(); }
+    catch (e) { banner("bad", e.message); }
+    finally { $("go").disabled = false; }
+  }
+
+  // ---- Job-Liste
+  function jobNode(j) {
+    const p = j.params || {};
+    const what = p.mode === "audio" ? "Audio · " + (p.aformat === "best" ? "Original" : p.aformat.toUpperCase())
+      : "Video · " + (p.quality === "best" ? "höchste Qualität" : p.quality + "p") + " · " + p.container.toUpperCase();
+    const node = el("div", { class: "job " + j.state });
+    node.append(el("div", { class: "t", text: j.title }));
+    const bar = el("div", { class: "bar", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.round(j.percent) }, el("i", { style: `width:${j.percent}%` }));
+    node.append(bar);
+    const s = el("div", { class: "s" });
+    s.append(el("span", { text: what }));
+    const phase = j.state === "running" && j.itemCount > 1 ? `${j.phase} (${j.itemIndex}/${j.itemCount})` : j.phase;
+    s.append(el("span", { text: phase }));
+    if (j.state === "running") { s.append(el("span", { text: Math.round(j.percent) + " %" })); if (j.speed) s.append(el("span", { text: fmtSpeed(j.speed) })); if (j.eta != null) s.append(el("span", { text: fmtEta(j.eta) })); }
+    node.append(s);
+    if (j.error) {
+      node.append(el("div", { class: "err", text: j.error }));
+      if (j.detail) node.append(el("details", {}, el("summary", { text: "Technische Details" }), el("pre", { text: j.detail })));
+    }
+    for (const n of j.notes || []) node.append(el("div", { class: "hint", text: n }));
+    if (j.files && j.files.length && j.state === "done") {
+      const f = el("div", { class: "files" });
+      j.files.forEach((file, i) => {
+        const href = `${BASE}/api/file?id=${encodeURIComponent(j.id)}&i=${i}&t=${encodeURIComponent(CFG.token || "")}`;
+        f.append(el("a", { class: "btn", href, download: file.name, text: `${file.name}${file.size ? " (" + fmtSize(file.size) + ")" : ""}` }));
+      });
+      node.append(f);
+    }
+    if (j.state === "queued" || j.state === "running") {
+      const b = el("button", { class: "small", type: "button", text: "Abbrechen" });
+      b.onclick = async () => { b.disabled = true; try { await api("/api/cancel", { id: j.id }); refreshJobs(); } catch (_) {} };
+      node.append(el("div", {}, b));
+    }
+    return node;
+  }
+
+  async function refreshJobs() {
+    try {
+      const { jobs } = await api("/api/jobs");
+      state.jobs = jobs;
+      const box = $("jobs"); box.replaceChildren();
+      if (!jobs.length) box.append(el("div", { class: "empty", text: "Noch nichts geladen." }));
+      else jobs.forEach((j) => box.append(jobNode(j)));
+      const active = jobs.some((j) => j.state === "queued" || j.state === "running");
+      clearTimeout(state.timer);
+      if (active) state.timer = setTimeout(refreshJobs, 800);
+    } catch (_) { clearTimeout(state.timer); state.timer = setTimeout(refreshJobs, 3000); }
+  }
+
+  // ---- Events
+  $("urlForm").addEventListener("submit", (e) => { e.preventDefault(); analyze(); });
+  $("url").addEventListener("paste", () => setTimeout(() => { if ($("url").checkValidity()) analyze(); }, 50));
+  $("tabVideo").onclick = () => { state.mode = "video"; syncUI(); };
+  $("tabAudio").onclick = () => { state.mode = "audio"; syncUI(); };
+  document.querySelectorAll("#container button").forEach((b) => b.onclick = () => { state.container = b.dataset.v; syncUI(); });
+  $("aformat").onchange = syncUI; $("quality").onchange = syncUI;
+  $("go").onclick = start;
+  $("clear").onclick = async () => { try { await api("/api/clear", {}); } catch (_) {} refreshJobs(); };
+  $("openDir").onclick = async () => { try { await api("/api/open-folder", {}); } catch (e) { banner("bad", e.message); } };
+
+  fillQuality(); syncUI(); boot();
+})();
+</script>
+</body>
+</html>
