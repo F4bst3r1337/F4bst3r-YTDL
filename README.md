@@ -10,6 +10,10 @@ auf Basis von [yt-dlp](https://github.com/yt-dlp/yt-dlp) und [ffmpeg](https://ff
 ![Basiert auf](https://img.shields.io/badge/Basiert%20auf-yt--dlp%20%2B%20ffmpeg-ef4444)
 ![Vibe-coded mit Claude](https://img.shields.io/badge/100%25%20vibe--coded-Claude-7c3aed)
 
+<a href="https://github.com/F4bst3r1337/F4bst3r-YTDL/releases/latest/download/F4bst3r-YTDL.zip"><img src="https://img.shields.io/badge/%E2%AC%87%20DOWNLOAD-F4bst3r--YTDL.zip-ef4444?style=for-the-badge" alt="Download F4bst3r-YTDL.zip"></a>
+
+[Alle Versionen](https://github.com/F4bst3r1337/F4bst3r-YTDL/releases) · [Changelog](CHANGELOG.md)
+
 <img src="docs/screenshot-video.png" alt="F4bst3r-YTDL: Video herunterladen" width="620">
 
 </div>
@@ -48,7 +52,7 @@ auf Basis von [yt-dlp](https://github.com/yt-dlp/yt-dlp) und [ffmpeg](https://ff
 Beim ersten Start richtet das Skript alles selbst ein und lädt dafür einmalig etwa 200 MB. Danach öffnet sich der Browser.
 Du kannst auch `index.html` per Doppelklick öffnen, solange das Startfenster läuft. Der Server muss laufen, weil ein Browser allein weder yt-dlp noch ffmpeg ausführen kann.
 
-Das fertige ZIP findest du unter [Releases](../../releases) als `F4bst3r-YTDL-<Version>.zip`.
+Das fertige ZIP lädst du über den Download-Button ganz oben oder direkt unter [Releases](../../releases) als `F4bst3r-YTDL.zip`. Entpacken, dann starten.
 
 ## Was automatisch eingerichtet wird
 

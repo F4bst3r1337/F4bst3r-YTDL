@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.3.4]
+
+### Hinzugefügt
+- Download-Button ganz oben in der README, der direkt auf das ZIP des neuesten Releases führt.
+
+### Geändert
+- Das ZIP im Release heißt jetzt immer `F4bst3r-YTDL.zip` (ohne Versionsnummer), damit der Direktlink stabil bleibt. Die Version steht im Release-Namen.
+
 ## [0.3.3]
 
 ### Geändert

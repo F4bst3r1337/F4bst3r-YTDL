@@ -1,7 +1,8 @@
 name: Release-ZIP
 
-# Hängt an jedes veröffentlichte Release ein sauberes ZIP "F4bst3r-YTDL-<Version>.zip",
+# Hängt an jedes veröffentlichte Release ein sauberes ZIP "F4bst3r-YTDL.zip",
 # in dem der Ordner F4bst3r-YTDL liegt (ohne .git und Entwicklungsdateien).
+# Der feste Name erlaubt den Direktlink .../releases/latest/download/F4bst3r-YTDL.zip
 on:
   release:
     types: [published]
@@ -19,5 +20,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          git archive --format=zip --prefix=F4bst3r-YTDL/ -o "F4bst3r-YTDL-${TAG}.zip" HEAD
-          gh release upload "$TAG" "F4bst3r-YTDL-${TAG}.zip" --clobber
+          git archive --format=zip --prefix=F4bst3r-YTDL/ -o "F4bst3r-YTDL.zip" HEAD
+          gh release upload "$TAG" "F4bst3r-YTDL.zip" --clobber
