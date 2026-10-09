@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.3.1]
+
+### Hinzugefügt
+- Footer „Made by F4bst3r“ mit Links zu X (Twitter) und YouTube unten in der Weboberfläche.
+
 ## [0.3]
 
 ### Hinzugefügt

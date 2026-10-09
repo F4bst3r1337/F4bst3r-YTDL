@@ -63,6 +63,9 @@
   .checks small { color: var(--muted); display: block; }
   .actions { margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .hint { color: var(--muted); font-size: 13px; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 4px 0 8px; }
+  footer a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  footer a:hover { color: var(--ink); }
   .msg { padding: 10px 12px; border-radius: 10px; font-size: 14px; border: 1px solid var(--line); background: var(--card); }
   .msg.bad { border-color: var(--bad); color: var(--bad); } .msg.warn { border-color: var(--warn); }
   .msg a { color: inherit; }
@@ -183,6 +186,12 @@
     <div id="jobs"><div class="empty">Noch nichts geladen.</div></div>
     <div class="hint" id="dirHint" style="margin-top:8px"></div>
   </section>
+
+  <footer>
+    Made by F4bst3r ·
+    <a href="https://x.com/F4bst3r" target="_blank" rel="noopener noreferrer">X (Twitter)</a> ·
+    <a href="https://www.youtube.com/@F4bst3r1" target="_blank" rel="noopener noreferrer">YouTube</a>
+  </footer>
 </main>
 
 <script>
