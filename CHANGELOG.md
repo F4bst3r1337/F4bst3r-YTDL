@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.3.3]
+
+### Geändert
+- README neu gestaltet: Badges, Feature-Liste und Screenshots (Ordner `docs/`).
+- LICENSE: Platzhalter „DEIN NAME“ durch „F4bst3r“ ersetzt.
+
 ## [0.3.2]
 
 ### Hinzugefügt
