@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.2]
+
+### Hinzugefügt
+- `CHANGELOG.md` mit der Versionshistorie.
+
 ## [0.1.1]
 
 ### Geändert
