@@ -1,0 +1,4 @@
+# Start-Skripte müssen auf ihrem Zielsystem die richtigen Zeilenenden haben
+*.bat text eol=crlf
+*.sh text eol=lf
+*.command text eol=lf

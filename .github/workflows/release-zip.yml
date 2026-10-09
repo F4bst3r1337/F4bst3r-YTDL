@@ -1,0 +1,23 @@
+name: Release-ZIP
+
+# Hängt an jedes veröffentlichte Release ein sauberes ZIP "F4bst3r-YTDL-<Version>.zip",
+# in dem der Ordner F4bst3r-YTDL liegt (ohne .git und Entwicklungsdateien).
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZIP bauen und anhängen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          git archive --format=zip --prefix=F4bst3r-YTDL/ -o "F4bst3r-YTDL-${TAG}.zip" HEAD
+          gh release upload "$TAG" "F4bst3r-YTDL-${TAG}.zip" --clobber

@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.3.2]
+
+### Hinzugefügt
+- Jedes Release enthält jetzt automatisch ein ZIP `F4bst3r-YTDL-<Version>.zip` unter Assets (gebaut per GitHub Action).
+
+### Behoben
+- Zeilenenden festgelegt (`.gitattributes`): `start.bat` mit CRLF, `start.sh` und `start.command` mit LF.
+
 ## [0.3.1]
 
 ### Hinzugefügt
