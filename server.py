@@ -104,6 +104,9 @@ def friendly(msg: str) -> str:
         return "Das Video ist nicht verfügbar."
     if "unsupported url" in low:
         return "Dieser Link wird nicht unterstützt."
+    if "http error 403" in low:
+        return ("YouTube hat den Download abgelehnt (403), auch nach einem zweiten Versuch. Starte den F4bst3r-YTDL neu "
+                "oder nutze --cookies-from-browser firefox (oder chrome, edge, brave).")
     if "http error 429" in low or "too many requests" in low:
         return "YouTube bremst gerade ab (zu viele Anfragen). Warte ein paar Minuten und versuche es erneut."
     if "ffmpeg" in low and ("not found" in low or "not installed" in low or "aren't installed" in low):
@@ -432,8 +435,9 @@ def run_job(job: Job) -> None:
             return
         job.state, job.phase = "running", "Wird vorbereitet"
         try:
-            for attempt in (0, 1):
-                light = attempt == 1
+            light = False
+            retried_403 = False
+            while True:
                 job.errors.clear()
                 job.files.clear()
                 job.percent = 0.0
@@ -446,10 +450,18 @@ def run_job(job: Job) -> None:
                 except DownloadError as exc:
                     if job.cancel.is_set():
                         raise DownloadCancelled("Abgebrochen")
+                    if not retried_403 and "http error 403" in (str(exc) + " ".join(job.errors)).lower():
+                        # YouTube lehnt manchmal einen Download-Link ab; ein frischer Versuch holt neue Links.
+                        retried_403 = True
+                        job.notes.append("YouTube hat den Download-Link abgelehnt (403). Es wurde automatisch ein zweiter Versuch gestartet.")
+                        job.phase = "Neuer Versuch (403)"
+                        time.sleep(2)
+                        continue
                     wants_embed = job.params["embedMeta"] or job.params["embedThumb"]
                     if not light and wants_embed and "ostprocessing" in str(exc):
                         job.notes.append("Cover und Metadaten konnten nicht eingebettet werden. Die Datei ist ohne sie gespeichert.")
                         job.phase = "Neuer Versuch ohne Cover"
+                        light = True
                         continue
                     raise
             if job.cancel.is_set():

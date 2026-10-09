@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden hier festgehalten.
 
+## [0.2.1]
+
+### Geändert
+- Bei „HTTP Error 403: Forbidden“ startet der Download automatisch einen zweiten Versuch mit frischen Links.
+- Verständlichere Fehlermeldung, falls der zweite Versuch ebenfalls scheitert.
+
 ## [0.2]
 
 ### Hinzugefügt
